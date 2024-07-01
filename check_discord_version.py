@@ -1,44 +1,68 @@
 # Import the os module
 import os
 import json
-import subprocess
+import requests
 
 # Import the color.py file
 from utils.color import Colors, BackColors, color_text
 from utils.request_utils import make_http_request, get_last_version_from_url
 from utils.utils import grep_line_in_file, get_command_line_argument, check_final_version
 
-
-def get_lastest_discord_version(url: str):
-	response = make_http_request(url, "GET", None, {'Content-Type': 'application/json'})
-	data = json.loads(response)
-	current_version = data['version']
-	print(f"Latest Discord version: {current_version}")
+# Import the re module for regular expressions
+import re
+# pip install beautifulsoup4 for parse elements from html
+from bs4 import BeautifulSoup
 
 
-def get_local_discord_version(local_path: str):
-	# update_exe_path = os.path.join(os.environ['LOCALAPPDATA'], 'Discord', 'Update.exe')
-	update_exe_path = os.path.join(local_path, 'Discord', 'Update.exe')
-	
-	if not os.path.exists(update_exe_path):
+def get_local_discord_version():
+	discord_base_path = os.path.join(os.environ['LOCALAPPDATA'], 'Discord')
+	if not os.path.exists(discord_base_path):
 		print("Discord n'est pas installé dans le chemin standard.")
 		return None
-	
-	try:
-		version = subprocess.check_output([update_exe_path, '--version'], text=True).strip()
-		return version
-	except subprocess.CalledProcessError as e:
-		print(f"Erreur lors de la récupération de la version de Discord: {e}")
+
+	# List all directories in the Discord directory
+	discord_versions = [d for d in os.listdir(discord_base_path) if os.path.isdir(os.path.join(discord_base_path, d)) and d.startswith('app-')]
+
+	# Use a regular expression to extract the version numbers and sort them
+	version_pattern = re.compile(r'app-(\d+\.\d+\.\d+)')
+	versions_sorted = sorted(discord_versions, key=lambda x: [int(num) for num in version_pattern.match(x).groups()[0].split('.')], reverse=True)
+
+	if versions_sorted:
+		latest_version = versions_sorted[0].split('-')[1]
+		print(f"La version la plus récente de Discord installée est : {latest_version}")
+		return latest_version
+	else:
+		print("Aucune version de Discord trouvée.")
 		return None
 
-	version = get_local_discord_version()
-	if version:
-		print(f"La version locale de Discord est : {version}")
+
+def get_lastest_discord_version(url: str):
+	response = requests.get(url)
+	
+	# Use BeautifulSoup to parse the HTML content
+	soup = BeautifulSoup(response.text, 'html.parser')
+	
+	# Search for the element containing the version with the class 'version'
+	version_element = soup.find('div', class_='version')
+	
+	if version_element:
+		# Extract the text from the element and clean the string if necessary
+		version_text = version_element.text.strip()
+		
+		# Use a regular expression to extract the numeric version
+		version_match = re.search(r'\d+\.\d+\.\d+', version_text)
+		if version_match:
+			latest_version = version_match.group(0)
+			print(f"La dernière version de Discord est : {latest_version}")
+			return latest_version
+		else:
+			print("Impossible d'extraire la version de Discord.")
 	else:
-		print("Impossible de récupérer la version de Discord.")
+		print("Élément contenant la version non trouvé.")
+
 
 def check_discord_version(url: str):
 	lastest_version = get_lastest_discord_version(url)
-	# local_version = get_local_discord_version()
-	# check_final_version(lastest_version, local_version, "Discord")
+	local_version = get_local_discord_version()
+	check_final_version(lastest_version, local_version, "Discord")
 

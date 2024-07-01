@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from colorama import init, Fore, Style, Back
 
-# Initialiser colorama
+# Init colorama
 init(autoreset=True)
 
 class Colors:
