@@ -2,9 +2,9 @@
 import os
 
 # Import the color.py file
-from color import Colors, BackColors, color_text
-from request_utils import make_http_request, get_last_version_from_url
-from utils import grep_line_in_file, get_command_line_argument, check_final_version
+from utils.color import Colors, BackColors, color_text
+from utils.request_utils import make_http_request, get_last_version_from_url
+from utils.utils import grep_line_in_file, get_command_line_argument, check_final_version
 
 def get_last_lol_locale_version(path: str):
 	"""
@@ -57,4 +57,4 @@ def check_league_of_legend_version(url: str):
 	truncate_version = last_version.split('.')[0] + "." + last_version.split('.')[1]
 	local_version = get_last_lol_locale_version(get_command_line_argument())
 
-	check_final_version(truncate_version, local_version)
+	check_final_version(truncate_version, local_version, "League of Legends")
