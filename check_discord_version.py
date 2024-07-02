@@ -38,24 +38,21 @@ def get_local_discord_version(path: str = None):
 		print("Aucune version de Discord trouvée.")
 		return None
 
-def get_discord_version():
-	url = "https://discord.com/api/download?platform=win"
+def extract_version_from_request(url):
+	# Extract version from data
 	response = requests.head(url, allow_redirects=True)
 	if response.status_code == 200:
 		final_url = response.url
 		version = final_url.split('/')[-2]  # Extract version from URL
 		return version
-	return None
+
+def get_discord_version():
+	url = "https://discord.com/api/download?platform=win"
+	return extract_version_from_request(url)
 
 def get_latest_discord_version(channel="stable"):
 	url = f"https://discord.com/api/download/{channel}?platform=win"
-	response = requests.head(url, allow_redirects=True)
-	if response.status_code == 200:
-		final_url = response.url
-		version = final_url.split('/')[-2]  # Extract version from URL
-		return version
-	return None
-
+	return extract_version_from_request(url)
 
 def check_discord_version():
 	latest_version = get_discord_version()
