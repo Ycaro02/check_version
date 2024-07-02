@@ -57,7 +57,7 @@ def get_latest_discord_version(channel="stable"):
 	return None
 
 
-def check_discord_version(url: str):
+def check_discord_version():
 	latest_version = get_discord_version()
 	latest_stable_version = get_latest_discord_version("stable")
 
