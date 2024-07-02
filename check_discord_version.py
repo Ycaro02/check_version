@@ -6,7 +6,7 @@ import requests
 # Import the color.py file
 from utils.color import Colors, BackColors, color_text
 from utils.request_utils import make_http_request, get_last_version_from_url
-from utils.utils import grep_line_in_file, get_command_line_argument, check_final_version
+from utils.utils import grep_line_in_file, get_first_command_line_args, check_version_greater_equal
 
 # Import the re module for regular expressions
 import re
@@ -64,7 +64,7 @@ def check_discord_version(url: str):
 	# detect os and fill os_version
 	if os.name == "nt": # Windows
 		local_version = get_local_discord_version()
-	else:
+	else:				# Linux (test hardpath)
 		local_version = get_local_discord_version('/mnt/windows/Users/Ycaro-Win/AppData/Local/Discord')
 
 	if latest_version > latest_stable_version:
@@ -80,10 +80,4 @@ def check_discord_version(url: str):
 	print(color_text("La dernière version de Discord disponible est : " + save_latest, Colors.YELLOW))
 
 	if (save_latest is not None) and (local_version is not None):
-		if local_version > save_latest:
-			print(color_text("La version de Discord installée est plus récente que la dernière version disponible.", Colors.GREEN))
-		elif local_version == save_latest:
-			print(color_text("La version de Discord installée est à jour.", Colors.GREEN))
-		else:
-			print(color_text("Une nouvelle version de Discord est disponible.", Colors.RED))
-
+		check_version_greater_equal(save_latest, local_version, "Discord")

@@ -30,7 +30,7 @@ def grep_line_in_file(file: str, word: str):
 	return None
 
 
-def get_command_line_argument():
+def get_first_command_line_args():
 	"""
 	Get the command line argument
 
@@ -42,15 +42,30 @@ def get_command_line_argument():
 		sys.exit(1)
 	return sys.argv[1]
 
-def check_final_version(url_version: str, local_version: str, app_name: str):
+def check_version_equal(latest_version: str, local_version: str, app_name: str):
 	"""
 	Check the final version of League of Legends
 
 	Parameters:
-	- url_version (str): The URL receive version
+	- latest_version (str): The URL receive version
 	- local_version (str): The local version.
 	"""
-	if url_version == local_version:
-		print(f"{Colors.GREEN}Le logiciel {app_name} est à jour{Colors.RESET}")
+	if local_version == latest_version:
+		print(f"{Colors.GREEN}La version de {app_name} est à jour{Colors.RESET}")
 	else:
-		print(f"{Colors.RED}Le logiciel {app_name} n'est pas à jour{Colors.RESET}")
+		print(f"{Colors.RED}Une nouvelle version de {app_name} est disponible {Colors.RESET}")
+
+def check_version_greater_equal(latest_version: str, local_version: str, app_name: str):
+	"""
+	Check the final version of League of Legends
+
+	Parameters:
+	- latest_version (str): The URL receive version
+	- local_version (str): The local version.
+	"""
+	if local_version > latest_version:
+		print(f"{Colors.GREEN}La version de {app_name} installée est plus récente que la dernière version disponible.{Colors.RESET}")
+		return ;
+	check_version_equal(latest_version, local_version, app_name)
+
+
