@@ -14,8 +14,11 @@ import re
 from bs4 import BeautifulSoup
 
 
-def get_local_discord_version():
-	discord_base_path = os.path.join(os.environ['LOCALAPPDATA'], 'Discord')
+def get_local_discord_version(path: str = None):
+	if str is None:
+		discord_base_path = os.path.join(os.environ['LOCALAPPDATA'], 'Discord')
+	else:
+		discord_base_path = path
 	if not os.path.exists(discord_base_path):
 		print("Discord n'est pas installé dans le chemin standard.")
 		return None
@@ -29,40 +32,58 @@ def get_local_discord_version():
 
 	if versions_sorted:
 		latest_version = versions_sorted[0].split('-')[1]
-		print(f"La version la plus récente de Discord installée est : {latest_version}")
+		# print(f"La version la plus récente de Discord installée est : {latest_version}")
 		return latest_version
 	else:
 		print("Aucune version de Discord trouvée.")
 		return None
 
+def get_discord_version():
+	url = "https://discord.com/api/download?platform=win"
+	response = requests.head(url, allow_redirects=True)
+	if response.status_code == 200:
+		final_url = response.url
+		version = final_url.split('/')[-2]  # Extract version from URL
+		return version
+	return None
 
-def get_lastest_discord_version(url: str):
-	response = requests.get(url)
-	
-	# Use BeautifulSoup to parse the HTML content
-	soup = BeautifulSoup(response.text, 'html.parser')
-	
-	# Search for the element containing the version with the class 'version'
-	version_element = soup.find('div', class_='version')
-	
-	if version_element:
-		# Extract the text from the element and clean the string if necessary
-		version_text = version_element.text.strip()
-		
-		# Use a regular expression to extract the numeric version
-		version_match = re.search(r'\d+\.\d+\.\d+', version_text)
-		if version_match:
-			latest_version = version_match.group(0)
-			print(f"La dernière version de Discord est : {latest_version}")
-			return latest_version
-		else:
-			print("Impossible d'extraire la version de Discord.")
-	else:
-		print("Élément contenant la version non trouvé.")
+def get_latest_discord_version(channel="stable"):
+	url = f"https://discord.com/api/download/{channel}?platform=win"
+	response = requests.head(url, allow_redirects=True)
+	if response.status_code == 200:
+		final_url = response.url
+		version = final_url.split('/')[-2]  # Extract version from URL
+		return version
+	return None
 
 
 def check_discord_version(url: str):
-	lastest_version = get_lastest_discord_version(url)
-	local_version = get_local_discord_version()
-	check_final_version(lastest_version, local_version, "Discord")
+	latest_version = get_discord_version()
+	latest_stable_version = get_latest_discord_version("stable")
+
+	# detect os and fill os_version
+	if os.name == "nt": # Windows
+		local_version = get_local_discord_version()
+	else:
+		local_version = get_local_discord_version('/mnt/windows/Users/Ycaro-Win/AppData/Local/Discord')
+
+	if latest_version > latest_stable_version:
+		save_latest = latest_version
+	else:
+		save_latest = latest_stable_version
+
+	if save_latest is None:
+		print(color_text("Impossible de récupérer la dernière version de Discord.", Colors.RED))
+		return
+	
+	print(color_text("La version de Discord installée est : " + local_version, Colors.YELLOW))
+	print(color_text("La dernière version de Discord disponible est : " + save_latest, Colors.YELLOW))
+
+	if (save_latest is not None) and (local_version is not None):
+		if local_version > save_latest:
+			print(color_text("La version de Discord installée est plus récente que la dernière version disponible.", Colors.GREEN))
+		elif local_version == save_latest:
+			print(color_text("La version de Discord installée est à jour.", Colors.GREEN))
+		else:
+			print(color_text("Une nouvelle version de Discord est disponible.", Colors.RED))
 

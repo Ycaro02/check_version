@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
-
-# pip deps: beautifulsoup4 colorama 
+# pip deps: beautifulsoup4 colorama requests
 
 from check_lol_version import check_league_of_legend_version
 from check_discord_version import check_discord_version
